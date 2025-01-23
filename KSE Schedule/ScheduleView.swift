@@ -24,13 +24,14 @@ struct ScheduleView: View {
                             
                             ForEach(day_tuple.1, id: \.id) { event in
                                 VStack(alignment: .leading) {
-                                    Text(event.title)
-                                        .font(.headline)
-                                    Text(event.location)
-                                        .font(.subheadline)
-                                    Text(event.desc)
-                                        .font(.subheadline)
                                     Text("\(formatDate(event.startDate)) - \(formatDate(event.endDate))")
+                                        .font(.title3)
+                                        .foregroundStyle(.green)
+                                    Text(event.title)
+                                        .font(.title3)
+                                    Text(event.location)
+                                        .font(.headline)
+                                    Text(event.desc)
                                         .font(.subheadline)
                                         .foregroundStyle(.gray)
                                 }
