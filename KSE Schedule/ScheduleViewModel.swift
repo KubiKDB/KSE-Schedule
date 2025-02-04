@@ -39,13 +39,15 @@ class ScheduleViewModel: ObservableObject {
     
     func fetchSchedule() {
         isLoading = true
-        downloadICS(for: groupIDs) { localURL in
-            DispatchQueue.main.async {
-                self.isLoading = false
-                if let localURL = localURL {
-                    self.scheduleEntries = self.parseICS(from: localURL)
-                } else {
-                    print("Failed to download the schedule.")
+        DispatchQueue.main.async {
+            self.downloadICS(for: self.groupIDs) { localURL in
+                DispatchQueue.main.async {
+                    self.isLoading = false
+                    if let localURL = localURL {
+                        self.scheduleEntries = self.parseICS(from: localURL)
+                    } else {
+                        print("Failed to download the schedule.")
+                    }
                 }
             }
         }
