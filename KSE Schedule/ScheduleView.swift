@@ -48,9 +48,16 @@ struct ScheduleView: View {
                 }
             }
             .onAppear {
-                if let filePath = Bundle.main.path(forResource: "Groups", ofType: "txt")
-                {
-                    for group_pair in viewModel.parseGroups(from: filePath) ?? []
+//                if let filePath = Bundle.main.path(forResource: "Groups", ofType: "txt")
+//                {
+//                    for group_pair in viewModel.parseGroups(from: filePath) ?? []
+//                    {
+//                        let group = SearchView.Group(name: group_pair.1, id: group_pair.0)
+//                        groups.append(group)
+//                    }
+//                }
+                viewModel.parseGroups{ group_list in
+                    for group_pair in group_list ?? []
                     {
                         let group = SearchView.Group(name: group_pair.1, id: group_pair.0)
                         groups.append(group)

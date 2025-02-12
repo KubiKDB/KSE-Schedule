@@ -4,6 +4,7 @@ class ScheduleViewModel: ObservableObject {
     @Published var scheduleEntries: [(String,[Event])] = []
     @Published var isLoading: Bool = false
     @AppStorage("UserGroups") private var groupIDsString: String = ""
+    private let groupDocLink: String = "https://docs.google.com/document/d/1rRdB-hgCNrXU8YVyqTrTpE2WqbJFDIYgBNI3oCQthMo/export?format=txt"
 
     public var groupIDs: [Int] {
         get {
@@ -14,13 +15,31 @@ class ScheduleViewModel: ObservableObject {
         }
     }
     
-    func parseGroups(from filePath: String) -> [(Int, String)]? {
-        do {
-            let content = try String(contentsOfFile: filePath, encoding: .utf8)
-            
-            let lines = content.components(separatedBy: .newlines)
-            
-            let tuples: [(Int, String)] = lines.compactMap { line in
+//    func parseGroups(from filePath: String) -> [(Int, String)]? {
+//        do {
+//            let content = try String(contentsOfFile: filePath, encoding: .utf8)
+//            
+//            let lines = content.components(separatedBy: .newlines)
+//            
+//            let tuples: [(Int, String)] = lines.compactMap { line in
+//                let parts = line.components(separatedBy: " : ")
+//                guard parts.count == 2, let number = Int(parts[0].trimmingCharacters(in: .whitespaces)) else {
+//                    return nil
+//                }
+//                let subject = parts[1].trimmingCharacters(in: .whitespaces)
+//                return (number, subject)
+//            }
+//            
+//            return tuples
+//        } catch {
+//            print("Error reading file: \(error)")
+//            return nil
+//        }
+//    }
+    
+    func parseGroups(completion: @escaping ([(Int, String)]?) -> Void) {
+        loadGroupsFromCloudStorage {lines in
+            let parsedGroups: [(Int, String)] = lines.compactMap { line in
                 let parts = line.components(separatedBy: " : ")
                 guard parts.count == 2, let number = Int(parts[0].trimmingCharacters(in: .whitespaces)) else {
                     return nil
@@ -28,14 +47,27 @@ class ScheduleViewModel: ObservableObject {
                 let subject = parts[1].trimmingCharacters(in: .whitespaces)
                 return (number, subject)
             }
-            
-            return tuples
-        } catch {
-            print("Error reading file: \(error)")
-            return nil
+            completion(parsedGroups)
         }
     }
+
     
+    func loadGroupsFromCloudStorage(completion: @escaping ([String.SubSequence]) -> Void){
+        guard let url = URL(string: groupDocLink) else {
+            print("Invalid URL")
+            return
+        }
+        let task = URLSession.shared.dataTask(with: url) { data, response, error in
+            if let error = error {
+                print("Error fetching document: \(error)")
+                return
+            }
+            if let data = data, let content = String(data: data, encoding: .utf8) {
+                completion(content.split(separator: "\r\n"))
+            }
+        }
+        task.resume()
+    }
     
     func fetchSchedule() {
         isLoading = true
